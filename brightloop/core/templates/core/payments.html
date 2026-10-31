@@ -1,0 +1,5 @@
+{% extends 'core/base.html' %}{% block content %}<h1>Payments</h1>
+<div class="panel p-0 table-responsive"><table class="table m-0"><thead><tr><th>Date</th><th>Invoice</th><th>Customer</th><th>Method</th><th>Note</th><th class="text-end">Amount</th></tr></thead>
+{% for p in page %}<tr><td>{{ p.date }}</td><td><a href="{% url 'invoice_detail' p.invoice.pk %}">{{ p.invoice.number }}</a></td><td>{{ p.invoice.customer }}</td><td>{{ p.get_method_display }}</td><td>{{ p.note }}</td><td class="text-end">₹{{ p.amount }}</td></tr>
+{% empty %}<tr><td colspan="6" class="text-muted p-4">No payments yet. Open an invoice and record one.</td></tr>{% endfor %}</table></div>
+{% include 'core/_pager.html' %}{% endblock %}

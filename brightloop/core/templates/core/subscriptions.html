@@ -1,0 +1,8 @@
+{% extends 'core/base.html' %}{% block content %}
+<div class="d-flex justify-content-between mb-3"><h1 class="m-0">Subscriptions</h1><a class="btn btn-brand" href="{% url 'subscription_new' %}">New subscription</a></div>
+<form class="std d-flex gap-2 mb-3" method="get"><input name="q" value="{{ q }}" placeholder="Search number or customer" style="max-width:280px">
+<select name="status" style="max-width:180px"><option value="">All statuses</option>{% for v,l in statuses %}<option value="{{ v }}" {% if v == status %}selected{% endif %}>{{ l }}</option>{% endfor %}</select><button class="btn btn-outline-secondary">Filter</button></form>
+<div class="panel p-0 table-responsive"><table class="table m-0"><thead><tr><th>Number</th><th>Customer</th><th>Plan</th><th>Next billing</th><th>Status</th></tr></thead>
+{% for s in page %}<tr><td><a href="{% url 'subscription_detail' s.pk %}">{{ s.number }}</a></td><td>{{ s.customer }}</td><td>{{ s.plan.name }}</td><td>{{ s.next_billing_date|default:'-' }}</td><td><span class="badge st-{{ s.status }}">{{ s.get_status_display }}</span>{% if s.paused %} <span class="badge st-paused">Paused</span>{% endif %}</td></tr>
+{% empty %}<tr><td colspan="5" class="text-muted p-4">No subscriptions match. Create one with “New subscription”.</td></tr>{% endfor %}</table></div>
+{% include 'core/_pager.html' %}{% endblock %}

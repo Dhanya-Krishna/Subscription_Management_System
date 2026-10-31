@@ -1,0 +1,53 @@
+{% extends 'core/base.html' %}
+{% block title %}{{ title }} – Brightloop{% endblock %}
+{% block content %}
+<a href="{{ back_url }}" class="btn btn-outline-secondary btn-sm noprint mb-3" style="text-decoration:none">← Back to list</a>
+<h1 class="mb-3">{{ title }}</h1>
+{% if help_text %}<p class="text-muted mb-3" style="font-size:.9rem">{{ help_text }}</p>{% endif %}
+<form method="post" class="std">
+  {% csrf_token %}
+  <div class="panel mb-3">
+    {{ form.non_field_errors }}
+    <div class="row g-3">
+      {% for f in form %}
+      <div class="col-md-{% if f.field.widget.input_type == 'checkbox' %}12{% else %}6{% endif %}">
+        {% if f.field.widget.input_type == 'checkbox' %}
+          <div class="form-check mt-2">
+            {{ f }} <label class="form-check-label" for="{{ f.id_for_label }}">{{ f.label }}</label>
+          </div>
+        {% else %}
+          <label for="{{ f.id_for_label }}">{{ f.label }}</label>
+          {{ f }}
+        {% endif %}
+        {{ f.errors }}
+        {% if f.help_text %}<span class="helptext">{{ f.help_text }}</span>{% endif %}
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  {% if formset %}
+  <div class="panel mb-3">
+    <h6 class="mb-3">{{ formset_title|default:"Lines" }}</h6>
+    {{ formset.management_form }}
+    {% for f in formset %}
+    <div class="row g-2 align-items-end mb-2 pb-2" style="border-bottom:1px solid var(--border)">
+      {% for field in f.visible_fields %}
+      <div class="col-md-3">
+        {% if forloop.parentloop.first %}<label>{{ field.label }}</label>{% endif %}
+        {{ field }}
+        {{ field.errors }}
+      </div>
+      {% endfor %}
+      {% for field in f.hidden_fields %}{{ field }}{% endfor %}
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <div class="d-flex gap-2">
+    <button type="submit" class="btn btn-brand" style="color:#fff">{{ button|default:"Save" }}</button>
+    <a href="{{ back_url }}" class="btn btn-outline-secondary">Cancel</a>
+  </div>
+</form>
+{% endblock %}

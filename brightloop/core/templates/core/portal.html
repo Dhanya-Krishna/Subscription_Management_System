@@ -1,0 +1,681 @@
+{% load static %}
+<!doctype html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Customer Portal – Brightloop</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+:root, [data-theme="light"] {
+  --bg:#f4f6f9;--bg-card:#fff;--bg-sidebar:#0f1419;--bg-sidebar-hover:#1a2332;--bg-sidebar-active:#243044;
+  --text:#0f172a;--text-muted:#64748b;--text-sidebar:#94a3b8;--border:#e2e8f0;--accent:#7c3aed;--accent-soft:#ede9fe;
+  --accent-2:#8b5cf6;--teal:#0d9488;--teal-soft:#ccfbf1;--amber:#d97706;--amber-soft:#fef3c7;--red:#dc2626;--red-soft:#fee2e2;
+  --green:#059669;--green-soft:#d1fae5;--shadow:0 4px 24px rgba(15,23,42,.06);--shadow-sm:0 2px 8px rgba(15,23,42,.04);
+  --radius:16px;--chart-grid:rgba(148,163,184,.25);
+}
+[data-theme="dark"] {
+  --bg:#0b0f14;--bg-card:#151b24;--bg-sidebar:#080c10;--bg-sidebar-hover:#121820;--bg-sidebar-active:#1c2533;
+  --text:#f1f5f9;--text-muted:#94a3b8;--text-sidebar:#94a3b8;--border:#1e293b;--accent:#a78bfa;--accent-soft:#2e1065;
+  --accent-2:#8b5cf6;--teal:#2dd4bf;--teal-soft:#134e4a;--amber:#fbbf24;--amber-soft:#78350f;--red:#f87171;--red-soft:#7f1d1d;
+  --green:#34d399;--green-soft:#064e3b;--shadow:0 4px 24px rgba(0,0,0,.35);--shadow-sm:0 2px 8px rgba(0,0,0,.25);
+  --chart-grid:rgba(148,163,184,.12);
+}
+*{box-sizing:border-box}html,body{height:100%;margin:0}
+body{font-family:Inter,system-ui,sans-serif;background:var(--bg);color:var(--text);font-size:14.5px;transition:background .25s,color .25s}
+.app{display:flex;min-height:100vh}
+.sidebar{width:250px;background:var(--bg-sidebar);color:var(--text-sidebar);display:flex;flex-direction:column;position:sticky;top:0;height:100vh;flex-shrink:0;padding:1.3rem .9rem;z-index:40}
+.sidebar .brand{display:flex;align-items:center;gap:.65rem;color:#fff;font-weight:700;font-size:1.15rem;text-decoration:none;letter-spacing:-.02em;margin-bottom:1.6rem;padding:0 .35rem}
+.sidebar .brand-mark{width:32px;height:32px;border-radius:9px;background:linear-gradient(135deg,#7c3aed,#06b6d4);display:grid;place-items:center;color:#fff;font-weight:800;font-size:.9rem}
+.sidebar .nav-section{font-size:.65rem;text-transform:uppercase;letter-spacing:.08em;color:#64748b;padding:.45rem .65rem .3rem;margin-top:.4rem}
+.sidebar a.nav-item{display:flex;align-items:center;gap:.7rem;color:var(--text-sidebar);padding:.6rem .75rem;border-radius:10px;text-decoration:none;margin-bottom:2px;font-weight:500;font-size:.9rem;transition:background .15s,color .15s;cursor:pointer;border:none;background:transparent;width:100%;text-align:left}
+.sidebar a.nav-item:hover{background:var(--bg-sidebar-hover);color:#fff}
+.sidebar a.nav-item.active{background:var(--bg-sidebar-active);color:#fff;box-shadow:inset 3px 0 0 var(--accent)}
+.sidebar .spacer{flex:1}
+.sidebar .user-box{padding:.8rem;border-radius:12px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.06);margin-top:.5rem}
+.sidebar .user-box .name{color:#fff;font-weight:600;font-size:.88rem}
+.sidebar .user-box .role{font-size:.72rem;color:#64748b;margin-top:2px;word-break:break-all}
+.logout-btn{display:flex;align-items:center;gap:.7rem;width:100%;background:transparent;border:none;color:var(--text-sidebar);padding:.6rem .75rem;border-radius:10px;font-weight:500;font-size:.9rem;cursor:pointer;text-align:left}
+.logout-btn:hover{background:var(--bg-sidebar-hover);color:#fff}
+.main{flex:1;min-width:0;padding:1.5rem 1.75rem 2.5rem;max-width:1400px}
+.topbar{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:.75rem;margin-bottom:1.5rem}
+.topbar h1{font-size:1.45rem;font-weight:700;letter-spacing:-.03em;margin:0}
+.topbar .greeting{color:var(--text-muted);font-size:.9rem;margin-top:.15rem}
+.topbar-actions{display:flex;align-items:center;gap:.5rem}
+.theme-icon-btn{width:40px;height:40px;border-radius:12px;border:1.5px solid var(--border);background:var(--bg-card);color:var(--text);display:grid;place-items:center;cursor:pointer;transition:border-color .15s,background .15s;box-shadow:var(--shadow-sm)}
+.theme-icon-btn:hover{border-color:var(--accent);background:var(--accent-soft);color:var(--accent)}
+.theme-icon-btn .icon-sun,.theme-icon-btn .icon-moon{display:none}
+[data-theme="light"] .theme-icon-btn .icon-moon{display:block}
+[data-theme="dark"] .theme-icon-btn .icon-sun{display:block}
+.card-ui{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow-sm);padding:1.2rem 1.35rem;transition:background .25s,border-color .25s}
+.stat-card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:1.15rem 1.25rem;height:100%;transition:transform .15s,box-shadow .2s,border-color .2s;box-shadow:var(--shadow-sm)}
+.stat-card.clickable{cursor:pointer}
+.stat-card.clickable:hover{transform:translateY(-2px);border-color:var(--accent);box-shadow:var(--shadow)}
+.stat-card .label{font-size:.78rem;color:var(--text-muted);font-weight:500;margin-bottom:.35rem}
+.stat-card .value{font-size:1.55rem;font-weight:700;letter-spacing:-.03em;color:var(--text);line-height:1.15}
+.stat-card .value.due{color:var(--amber)}.stat-card .value.paid{color:var(--teal)}.stat-card .value.accent{color:var(--accent)}.stat-card .value.danger{color:var(--red)}
+.stat-card .hint{font-size:.74rem;color:var(--text-muted);margin-top:.3rem}
+.stat-card .trend{display:inline-flex;align-items:center;gap:.2rem;font-size:.72rem;font-weight:600;padding:.12rem .4rem;border-radius:99px;margin-top:.35rem}
+.stat-card .trend.up{background:var(--green-soft);color:var(--green)}.stat-card .trend.down{background:var(--red-soft);color:var(--red)}
+.panel-title{font-weight:600;font-size:.92rem;margin-bottom:1rem;display:flex;align-items:center;justify-content:space-between;gap:.5rem;flex-wrap:wrap}
+.panel-title .sub{font-weight:400;font-size:.8rem;color:var(--text-muted)}
+.panel-title .link{font-size:.8rem;font-weight:500;color:var(--accent);text-decoration:none;cursor:pointer}
+.accent-card{border-radius:var(--radius);padding:1.2rem 1.35rem;color:#fff;position:relative;overflow:hidden}
+.accent-card.purple{background:linear-gradient(135deg,#7c3aed,#5b21b6)}.accent-card.teal{background:linear-gradient(135deg,#0d9488,#0f766e)}
+.accent-card .tag{font-size:.68rem;font-weight:600;text-transform:uppercase;letter-spacing:.06em;opacity:.85}
+.accent-card .name{font-weight:700;font-size:1.05rem;margin:.2rem 0}.accent-card .price{font-weight:600;opacity:.95}
+.table-modern{width:100%;border-collapse:collapse}
+.table-modern th{font-weight:500;color:var(--text-muted);font-size:.72rem;text-transform:uppercase;letter-spacing:.04em;padding:.6rem .45rem;border-bottom:1px solid var(--border);text-align:left}
+.table-modern td{padding:.8rem .45rem;border-bottom:1px solid var(--border);vertical-align:middle}
+.table-modern tr:last-child td{border-bottom:none}
+.table-modern a{color:var(--accent);text-decoration:none;font-weight:500}.table-modern a:hover{text-decoration:underline}
+.badge-ui{display:inline-flex;align-items:center;font-size:.7rem;font-weight:600;padding:.18rem .5rem;border-radius:99px}
+.badge-ui.active,.badge-ui.paid{background:var(--green-soft);color:var(--green)}
+.badge-ui.confirmed,.badge-ui.quotation{background:#dbeafe;color:#1e40af}
+[data-theme="dark"] .badge-ui.confirmed,[data-theme="dark"] .badge-ui.quotation{background:#1e3a5f;color:#93c5fd}
+.badge-ui.draft,.badge-ui.closed,.badge-ui.cancelled{background:var(--border);color:var(--text-muted)}
+.badge-ui.overdue{background:var(--red-soft);color:var(--red)}.badge-ui.paused{background:var(--amber-soft);color:var(--amber)}
+.badge-ui.upgrade{background:var(--accent-soft);color:var(--accent)}.badge-ui.owned{background:var(--teal-soft);color:var(--teal)}
+.btn-primary-ui{background:var(--accent);color:#fff!important;border:none;border-radius:10px;padding:.5rem 1rem;font-weight:600;font-size:.86rem;cursor:pointer;text-decoration:none;display:inline-block}
+.btn-primary-ui:hover{background:var(--accent-2);color:#fff!important}
+.btn-ghost{background:transparent;border:1.5px solid var(--border);color:var(--text)!important;border-radius:10px;padding:.45rem .9rem;font-weight:500;font-size:.86rem;cursor:pointer;text-decoration:none;display:inline-block}
+.btn-ghost:hover{border-color:var(--accent);background:var(--accent-soft);color:var(--accent)!important}
+.btn-sm-ui{padding:.28rem .65rem;font-size:.78rem;border-radius:8px}
+.filter-row{display:flex;flex-wrap:wrap;gap:.7rem;align-items:flex-end;margin-bottom:1.15rem}
+.filter-row label{font-size:.72rem;font-weight:500;color:var(--text-muted);display:block;margin-bottom:.2rem}
+.filter-row select,.filter-row input[type="date"]{background:var(--bg-card);border:1.5px solid var(--border);border-radius:8px;padding:.38rem .65rem;color:var(--text);font-size:.86rem;min-width:130px}
+.filter-row select:focus,.filter-row input:focus{outline:2px solid var(--accent);border-color:var(--accent)}
+.tab-pane{display:none;animation:fadeIn .22s ease}.tab-pane.active{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:none}}
+.chart-wrap{position:relative;height:260px;width:100%}.chart-wrap.sm{height:210px}.chart-wrap.lg{height:300px}
+.chart-empty{height:100%;display:flex;align-items:center;justify-content:center;color:var(--text-muted);font-size:.9rem;text-align:center;padding:1rem}
+.sub-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:1rem}
+.sub-card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:1.15rem;transition:border-color .15s,box-shadow .2s;display:flex;flex-direction:column}
+.sub-card:hover{border-color:var(--accent);box-shadow:var(--shadow)}
+.sub-card .plan-name{font-weight:700;font-size:1.02rem}.sub-card .meta{font-size:.8rem;color:var(--text-muted);margin-top:.2rem}
+.sub-card .amounts{display:flex;gap:1.2rem;margin-top:.85rem;padding-top:.85rem;border-top:1px solid var(--border)}
+.sub-card .amounts .lbl{font-size:.7rem;color:var(--text-muted)}.sub-card .amounts .val{font-weight:700;font-size:.95rem}
+.sub-card .actions{margin-top:auto;padding-top:.9rem;display:flex;gap:.5rem;flex-wrap:wrap}
+.plan-catalog-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:1rem}
+.plan-catalog-card{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:1.25rem;position:relative;transition:border-color .15s,box-shadow .2s}
+.plan-catalog-card:hover{border-color:var(--accent);box-shadow:var(--shadow)}
+.plan-catalog-card.featured{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent),var(--shadow-sm)}
+.plan-catalog-card .price-big{font-size:1.6rem;font-weight:700;letter-spacing:-.03em;margin:.4rem 0 .15rem}
+.plan-catalog-card .period{font-size:.82rem;color:var(--text-muted)}
+.plan-catalog-card ul{list-style:none;padding:0;margin:.9rem 0 1rem;font-size:.85rem;color:var(--text-muted)}
+.plan-catalog-card ul li{padding:.25rem 0;padding-left:1.2rem;position:relative}
+.plan-catalog-card ul li::before{content:"✓";position:absolute;left:0;color:var(--teal);font-weight:700}
+.empty-state{text-align:center;padding:2.5rem 1.25rem;color:var(--text-muted)}.empty-state .icon{font-size:2.2rem;margin-bottom:.6rem;opacity:.45}
+.profile-form label{font-weight:500;font-size:.84rem;margin-bottom:.28rem;display:block}
+.profile-form input,.profile-form textarea,.profile-form select{width:100%;background:var(--bg);border:1.5px solid var(--border);border-radius:10px;padding:.52rem .75rem;color:var(--text);margin-bottom:.9rem}
+.profile-form input:focus,.profile-form textarea:focus{outline:2px solid var(--accent);border-color:var(--accent)}
+.profile-form input[readonly]{opacity:.85;cursor:default}
+.setting-row{display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:.85rem 0;border-bottom:1px solid var(--border)}
+.setting-row:last-child{border-bottom:none}.setting-row .title{font-weight:600;font-size:.9rem}.setting-row .desc{font-size:.8rem;color:var(--text-muted);margin-top:.15rem}
+.form-switch .form-check-input{width:2.4em;height:1.25em;cursor:pointer;background-color:var(--border);border-color:var(--border)}
+.form-switch .form-check-input:checked{background-color:var(--accent);border-color:var(--accent)}
+.mobile-toggle{display:none;background:var(--bg-card);border:1px solid var(--border);border-radius:10px;padding:.4rem .65rem;cursor:pointer;color:var(--text)}
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:30}.overlay.show{display:block}
+@media(max-width:900px){.sidebar{position:fixed;left:-270px;transition:left .25s;box-shadow:var(--shadow)}.sidebar.open{left:0}.mobile-toggle{display:inline-flex}.main{padding:1.1rem .9rem 2rem}}
+
+.table-modern a.btn-primary-ui{color:#fff!important;text-decoration:none}
+.table-modern a.btn-ghost{color:var(--text)!important;text-decoration:none}
+.intro-banner{background:var(--bg-card);border:1px solid var(--border);border-radius:var(--radius);padding:1.2rem 1.35rem;margin-bottom:1.25rem}
+.intro-banner .panel-title{color:var(--text)!important;margin-bottom:.4rem}
+.intro-banner p,.intro-banner .text-muted{color:var(--text-muted)!important}
+.overdue-banner{border:1px solid var(--red);background:var(--red-soft);border-radius:var(--radius);padding:1rem 1.25rem;margin-bottom:1.25rem}
+.overdue-banner strong{color:var(--red)}
+[data-theme="dark"] .overdue-banner{background:#3f1212;border-color:#7f1d1d}
+[data-theme="dark"] .overdue-banner strong{color:#fecaca}
+[data-theme="dark"] .overdue-banner span{color:#fecaca}
+.plan-catalog-card .price-big,.plan-catalog-card .fw-semibold,.sub-card .plan-name{color:var(--text)!important}
+.product-section{margin-bottom:1.75rem}
+.product-section .product-head{display:flex;justify-content:space-between;align-items:flex-start;gap:1rem;margin-bottom:1rem;flex-wrap:wrap}
+.product-section .product-head h3{font-size:1.1rem;font-weight:700;margin:0;color:var(--text)}
+.product-section .type-pill{font-size:.72rem;font-weight:600;padding:.2rem .55rem;border-radius:99px;background:var(--accent-soft);color:var(--accent)}
+.offer-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:1rem}
+.variant-list{font-size:.82rem;color:var(--text-muted);margin-top:.35rem}
+
+</style>
+</head>
+<body>
+<div class="overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+<div class="app">
+<nav class="sidebar" id="sidebar">
+  <a class="brand" href="{% url 'portal' %}"><span class="brand-mark">B</span> Brightloop</a>
+  <div class="nav-section">Main</div>
+  <a class="nav-item active" data-tab="dashboard" onclick="switchTab('dashboard',this)">Dashboard</a>
+  <a class="nav-item" data-tab="statistics" onclick="switchTab('statistics',this)">Statistics</a>
+  <a class="nav-item" data-tab="subscriptions" onclick="switchTab('subscriptions',this)">My Subscriptions</a>
+  <a class="nav-item" data-tab="products" onclick="switchTab('products',this)">Browse &amp; Upgrade</a>
+  <div class="nav-section">Account</div>
+  <a class="nav-item" data-tab="support" onclick="switchTab('support',this)">Support</a>
+  <a class="nav-item" data-tab="settings" onclick="switchTab('settings',this)">Settings</a>
+  <a class="nav-item" data-tab="profile" onclick="switchTab('profile',this)">Profile</a>
+  <div class="spacer"></div>
+  <div class="user-box">
+    <div class="name">{{ user.get_full_name|default:user.email }}</div>
+    <div class="role">{{ user.get_role_display }}</div>
+  </div>
+  <form method="post" action="{% url 'logout' %}" style="margin-top:.4rem">{% csrf_token %}
+    <button type="submit" class="logout-btn">Log out</button>
+  </form>
+</nav>
+
+<div class="main">
+{% for m in messages %}<div class="alert alert-{% if m.tags == 'error' %}danger{% else %}success{% endif %} mb-3" style="border-radius:12px">{{ m }}</div>{% endfor %}
+
+<div class="topbar">
+  <div class="d-flex align-items-start gap-2">
+    <button class="mobile-toggle mt-1" onclick="openSidebar()" aria-label="Menu">☰</button>
+    <div>
+      <h1 id="pageTitle">Dashboard</h1>
+      <div class="greeting">Welcome back, {{ user.first_name|default:user.email }}!</div>
+    </div>
+  </div>
+  <div class="topbar-actions">
+    {% if amount_due > 0 %}
+    <button type="button" class="btn-primary-ui btn-sm-ui" onclick="showDueList()">Pay ₹{{ amount_due|floatformat:0 }} due</button>
+    {% endif %}
+    <button type="button" class="theme-icon-btn" onclick="toggleTheme()" title="Toggle light / dark" aria-label="Toggle theme">
+      <svg class="icon-moon" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>
+      <svg class="icon-sun" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+    </button>
+  </div>
+</div>
+
+<div id="duePaidPanel" class="card-ui mb-4" style="display:{% if show == 'due' or show == 'paid' %}block{% else %}none{% endif %}">
+  <div class="panel-title">
+    <span id="duePaidTitle">{% if show == 'paid' %}Payment history{% else %}Outstanding invoices{% endif %}</span>
+    <a class="link" onclick="hideDueList();return false;">← Back</a>
+  </div>
+  <div id="dueListBlock" style="display:{% if show != 'paid' %}block{% else %}none{% endif %}">
+    {% if due_list %}
+    <div class="table-responsive"><table class="table-modern">
+      <thead><tr><th>Invoice</th><th>Plan</th><th>Due date</th><th class="text-end">Balance</th><th></th></tr></thead>
+      <tbody>{% for i in due_list %}
+        <tr>
+          <td><a href="{% url 'invoice_detail' i.pk %}">{{ i.number }}</a></td>
+          <td>{{ i.subscription.plan.name|default:"—" }}</td>
+          <td>{{ i.due_date }}{% if i.is_overdue %} <span class="badge-ui overdue">Overdue</span>{% endif %}</td>
+          <td class="text-end fw-semibold" style="color:var(--amber)">₹{{ i.balance|floatformat:2 }}</td>
+          <td><a href="{% url 'invoice_detail' i.pk %}" class="btn-primary-ui btn-sm-ui">Pay</a></td>
+        </tr>{% endfor %}
+      </tbody>
+    </table></div>
+    {% else %}<div class="empty-state"><div class="icon">✓</div>Nothing outstanding.</div>{% endif %}
+  </div>
+  <div id="paidListBlock" style="display:{% if show == 'paid' %}block{% else %}none{% endif %}">
+    {% if paid_list %}
+    <div class="table-responsive"><table class="table-modern">
+      <thead><tr><th>Invoice</th><th>Plan</th><th>Issue date</th><th class="text-end">Paid</th><th></th></tr></thead>
+      <tbody>{% for i in paid_list %}
+        <tr>
+          <td><a href="{% url 'invoice_detail' i.pk %}">{{ i.number }}</a></td>
+          <td>{{ i.subscription.plan.name|default:"—" }}</td>
+          <td>{{ i.issue_date }}</td>
+          <td class="text-end fw-semibold" style="color:var(--teal)">₹{{ i.paid_amount|floatformat:2 }}</td>
+          <td><a href="{% url 'invoice_detail' i.pk %}" class="btn-ghost btn-sm-ui">View</a></td>
+        </tr>{% endfor %}
+      </tbody>
+    </table></div>
+    {% else %}<div class="empty-state">No payments yet.</div>{% endif %}
+  </div>
+</div>
+
+<div id="tabsContainer" style="display:{% if show == 'due' or show == 'paid' %}none{% else %}block{% endif %}">
+
+<!-- DASHBOARD -->
+<div id="tab-dashboard" class="tab-pane active">
+  <div class="row g-3 mb-4">
+    <div class="col-6 col-lg-3"><div class="stat-card"><div class="label">Active subscriptions</div><div class="value accent">{{ active_count }}</div><div class="hint">{{ total_subs }} total · {{ closed_count }} closed</div></div></div>
+    <div class="col-6 col-lg-3"><div class="stat-card clickable" onclick="showDueList()"><div class="label">Amount due</div><div class="value due">₹{{ amount_due|floatformat:2 }}</div><div class="hint">{{ open_invoice_count }} open · click to pay</div></div></div>
+    <div class="col-6 col-lg-3"><div class="stat-card clickable" onclick="showPaidList()"><div class="label">Paid till date</div><div class="value paid">₹{{ paid_till_date|floatformat:2 }}</div><div class="hint">Click for history</div></div></div>
+    <div class="col-6 col-lg-3"><div class="stat-card"><div class="label">Avg monthly spend</div><div class="value">₹{{ avg_monthly|floatformat:2 }}</div>
+      {% if growth_pct != None %}<div class="trend {% if growth_pct >= 0 %}up{% else %}down{% endif %}">{% if growth_pct >= 0 %}↑{% else %}↓{% endif %} {{ growth_pct|floatformat:1 }}% vs prior month</div>{% else %}<div class="hint">From payment history</div>{% endif %}
+    </div></div>
+  </div>
+  {% if overdue_count %}
+  <div class="overdue-banner">
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
+      <div><strong>{{ overdue_count }} overdue invoice{{ overdue_count|pluralize }}</strong>
+      <span> · ₹{{ overdue_amount|floatformat:2 }} past due</span></div>
+      <button type="button" class="btn-primary-ui btn-sm-ui" style="background:var(--red)" onclick="showDueList()">Review &amp; pay</button>
+    </div>
+  </div>
+  {% endif %}
+  {% if most_expensive or cheapest %}
+  <div class="row g-3 mb-4">
+    {% if most_expensive %}<div class="col-md-6"><div class="accent-card purple">
+      <div class="tag">Highest active plan</div><div class="name">{{ most_expensive.plan.name }}</div>
+      <div class="price">₹{{ most_expensive.plan.price }}/{{ most_expensive.plan.get_billing_period_display|lower }}</div>
+      <div style="opacity:.8;font-size:.82rem;margin-top:.3rem">{{ most_expensive.number }} · <a href="{% url 'subscription_detail' most_expensive.pk %}" style="color:#fff;text-decoration:underline">Open</a></div>
+    </div></div>{% endif %}
+    {% if cheapest %}<div class="col-md-6"><div class="accent-card teal">
+      <div class="tag">Most affordable active plan</div><div class="name">{{ cheapest.plan.name }}</div>
+      <div class="price">₹{{ cheapest.plan.price }}/{{ cheapest.plan.get_billing_period_display|lower }}</div>
+      <div style="opacity:.8;font-size:.82rem;margin-top:.3rem">{{ cheapest.number }} · <a href="{% url 'subscription_detail' cheapest.pk %}" style="color:#fff;text-decoration:underline">Open</a></div>
+    </div></div>{% endif %}
+  </div>
+  {% endif %}
+  <div class="row g-3 mb-4">
+    <div class="col-lg-8"><div class="card-ui">
+      <div class="panel-title"><span>Spending by plan <span class="sub">paid vs outstanding</span></span>
+        <a class="link" onclick="switchTab('statistics',document.querySelector('[data-tab=statistics]'))">Full analytics →</a></div>
+      <div class="chart-wrap"><canvas id="chartBarDash"></canvas><div class="chart-empty" id="emptyBarDash" style="display:none">No invoice data yet.</div></div>
+    </div></div>
+    <div class="col-lg-4"><div class="card-ui h-100">
+      <div class="panel-title">Where your money went <span class="sub">by plan</span></div>
+      <div class="chart-wrap sm"><canvas id="chartPieDash"></canvas><div class="chart-empty" id="emptyPieDash" style="display:none">No payments yet.</div></div>
+    </div></div>
+  </div>
+  <div class="card-ui">
+    <div class="panel-title"><span>Recent invoices</span><a class="link" onclick="showDueList()">Outstanding →</a></div>
+    {% if invoices %}
+    <div class="table-responsive"><table class="table-modern">
+      <thead><tr><th>Invoice</th><th>Plan</th><th>Issue</th><th>Due</th><th class="text-end">Total</th><th class="text-end">Balance</th><th>Status</th><th></th></tr></thead>
+      <tbody>{% for i in invoices|slice:":10" %}
+        <tr>
+          <td><a href="{% url 'invoice_detail' i.pk %}">{{ i.number }}</a></td>
+          <td>{{ i.subscription.plan.name|default:"—" }}</td>
+          <td>{{ i.issue_date }}</td>
+          <td>{{ i.due_date }}{% if i.is_overdue %} <span class="badge-ui overdue">Overdue</span>{% endif %}</td>
+          <td class="text-end">₹{{ i.total|floatformat:2 }}</td>
+          <td class="text-end fw-semibold" style="color:{% if i.balance > 0 %}var(--amber){% else %}var(--teal){% endif %}">₹{{ i.balance|floatformat:2 }}</td>
+          <td><span class="badge-ui {{ i.status }}">{{ i.get_status_display }}</span></td>
+          <td>{% if i.balance > 0 and i.status != 'cancelled' %}<a href="{% url 'invoice_detail' i.pk %}" class="btn-primary-ui btn-sm-ui">Pay</a>{% else %}<a href="{% url 'invoice_detail' i.pk %}" class="btn-ghost btn-sm-ui">View</a>{% endif %}</td>
+        </tr>{% endfor %}
+      </tbody>
+    </table></div>
+    {% else %}<div class="empty-state">No invoices yet.</div>{% endif %}
+  </div>
+</div>
+
+<!-- STATISTICS -->
+<div id="tab-statistics" class="tab-pane">
+  <form class="filter-row" method="get">
+    <input type="hidden" name="tab" value="statistics">
+    <div><label>Plan</label><select name="plan" onchange="this.form.submit()"><option value="">All plans</option>{% for p in plans %}<option value="{{ p.id }}" {% if f.plan == p.id|stringformat:'s' %}selected{% endif %}>{{ p.name }}</option>{% endfor %}</select></div>
+    <div><label>From</label><input type="date" name="from" value="{{ f.from }}"></div>
+    <div><label>To</label><input type="date" name="to" value="{{ f.to }}"></div>
+    <button type="submit" class="btn-primary-ui btn-sm-ui">Apply</button>
+    {% if f.plan or f.from or f.to %}<a href="{% url 'portal' %}?tab=statistics" class="btn-ghost btn-sm-ui">Clear</a>{% endif %}
+  </form>
+  <div class="row g-3 mb-4">
+    <div class="col-6 col-md-3"><div class="stat-card"><div class="label">Total paid</div><div class="value paid">₹{{ paid_till_date|floatformat:2 }}</div></div></div>
+    <div class="col-6 col-md-3"><div class="stat-card"><div class="label">Outstanding</div><div class="value due">₹{{ amount_due|floatformat:2 }}</div></div></div>
+    <div class="col-6 col-md-3"><div class="stat-card"><div class="label">Overdue</div><div class="value danger">₹{{ overdue_amount|floatformat:2 }}</div><div class="hint">{{ overdue_count }} invoice{{ overdue_count|pluralize }}</div></div></div>
+    <div class="col-6 col-md-3"><div class="stat-card"><div class="label">Avg / month</div><div class="value">₹{{ avg_monthly|floatformat:2 }}</div>
+      {% if growth_pct != None %}<div class="trend {% if growth_pct >= 0 %}up{% else %}down{% endif %}">{% if growth_pct >= 0 %}↑{% else %}↓{% endif %} {{ growth_pct|floatformat:1 }}% MoM</div>{% endif %}
+    </div></div>
+  </div>
+  <div class="row g-3 mb-4">
+    <div class="col-lg-7"><div class="card-ui"><div class="panel-title"><span>Monthly payment trend <span class="sub">₹ received each month</span></span></div>
+      <div class="chart-wrap lg"><canvas id="chartLine"></canvas><div class="chart-empty" id="emptyLine" style="display:none">No payment history yet.</div></div>
+    </div></div>
+    <div class="col-lg-5"><div class="card-ui"><div class="panel-title">Paid vs due by plan</div>
+      <div class="chart-wrap lg"><canvas id="chartBarStats"></canvas><div class="chart-empty" id="emptyBarStats" style="display:none">No plan billing data.</div></div>
+    </div></div>
+  </div>
+  <div class="row g-3 mb-4">
+    <div class="col-md-4"><div class="card-ui"><div class="panel-title">Revenue share by plan</div>
+      <div class="chart-wrap sm"><canvas id="chartPieStats"></canvas><div class="chart-empty" id="emptyPieStats" style="display:none">No payments.</div></div></div></div>
+    <div class="col-md-4"><div class="card-ui"><div class="panel-title">Payment methods</div>
+      <div class="chart-wrap sm"><canvas id="chartMethods"></canvas><div class="chart-empty" id="emptyMethods" style="display:none">No payments recorded.</div></div></div></div>
+    <div class="col-md-4"><div class="card-ui"><div class="panel-title">Invoice status mix</div>
+      <div class="chart-wrap sm"><canvas id="chartStatus"></canvas><div class="chart-empty" id="emptyStatus" style="display:none">No invoices.</div></div></div></div>
+  </div>
+  <div class="card-ui"><div class="panel-title">Plan breakdown</div>
+    {% if chart_items %}
+    <div class="table-responsive"><table class="table-modern">
+      <thead><tr><th>Plan</th><th class="text-end">Paid</th><th class="text-end">Due</th><th class="text-end">Combined</th></tr></thead>
+      <tbody>{% for c in chart_items %}
+        <tr><td>{{ c.name }}</td><td class="text-end" style="color:var(--teal)">₹{{ c.paid|floatformat:2 }}</td>
+        <td class="text-end" style="color:var(--amber)">₹{{ c.due|floatformat:2 }}</td>
+        <td class="text-end">₹{{ c.paid|add:c.due }}</td></tr>{% endfor %}
+      </tbody>
+    </table></div>
+    {% else %}<div class="empty-state">No plan data yet.</div>{% endif %}
+  </div>
+</div>
+
+<!-- SUBSCRIPTIONS -->
+<div id="tab-subscriptions" class="tab-pane">
+  <form class="filter-row" method="get">
+    <input type="hidden" name="tab" value="subscriptions">
+    <div><label>Status</label><select name="status" onchange="this.form.submit()">
+      <option value="">All statuses</option>
+      <option value="active" {% if f.status == 'active' %}selected{% endif %}>Active</option>
+      <option value="confirmed" {% if f.status == 'confirmed' %}selected{% endif %}>Confirmed</option>
+      <option value="quotation" {% if f.status == 'quotation' %}selected{% endif %}>Quotation</option>
+      <option value="draft" {% if f.status == 'draft' %}selected{% endif %}>Draft</option>
+      <option value="paused" {% if f.status == 'paused' %}selected{% endif %}>Paused</option>
+      <option value="closed" {% if f.status == 'closed' %}selected{% endif %}>Closed</option>
+    </select></div>
+    <div><label>Plan</label><select name="plan" onchange="this.form.submit()">
+      <option value="">All plans</option>{% for p in plans %}<option value="{{ p.id }}" {% if f.plan == p.id|stringformat:'s' %}selected{% endif %}>{{ p.name }}</option>{% endfor %}
+    </select></div>
+    {% if f.status or f.plan %}<a href="{% url 'portal' %}?tab=subscriptions" class="btn-ghost btn-sm-ui">Clear filters</a>{% endif %}
+  </form>
+  {% if sub_cards %}
+  <div class="sub-grid mb-4">
+    {% for c in sub_cards %}
+    <div class="sub-card">
+      <div class="d-flex justify-content-between align-items-start gap-2">
+        <div><div class="plan-name">{{ c.sub.plan.name }}</div><div class="meta">{{ c.sub.number }}</div></div>
+        <span class="badge-ui {{ c.sub.status }}">{{ c.sub.get_status_display }}</span>
+      </div>
+      <div class="meta mt-2"><strong>₹{{ c.sub.plan.price }}</strong> / {{ c.sub.plan.get_billing_period_display|lower }}</div>
+      <div class="meta">
+        {% if c.start %}Started {{ c.start }}{% endif %}
+        {% if c.end %} · Ends {{ c.end }}{% endif %}
+        {% if c.next_billing and c.sub.status == 'active' %} · Next bill <strong>{{ c.next_billing }}</strong>{% endif %}
+      </div>
+      <div class="amounts">
+        <div><div class="lbl">Paid so far</div><div class="val" style="color:var(--teal)">₹{{ c.paid|floatformat:2 }}</div></div>
+        <div><div class="lbl">Still due</div><div class="val" style="color:{% if c.has_due %}var(--amber){% else %}var(--text-muted){% endif %}">₹{{ c.due|floatformat:2 }}</div></div>
+      </div>
+      <div class="actions">
+        <a href="{% url 'subscription_detail' c.sub.pk %}" class="btn-ghost btn-sm-ui">View details</a>
+        {% if c.has_due %}<button type="button" class="btn-primary-ui btn-sm-ui" onclick="showDueList()">Pay dues</button>{% endif %}
+        {% if c.sub.status == 'quotation' %}<a href="{% url 'subscription_detail' c.sub.pk %}" class="btn-primary-ui btn-sm-ui">Accept quote</a>{% endif %}
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+  <div class="card-ui">
+    <div class="panel-title">All matching subscriptions</div>
+    <div class="table-responsive"><table class="table-modern">
+      <thead><tr><th>Number</th><th>Plan</th><th>Status</th><th>Start</th><th>Next bill</th><th class="text-end">Paid</th><th class="text-end">Due</th><th></th></tr></thead>
+      <tbody>{% for c in sub_cards %}
+        <tr>
+          <td><a href="{% url 'subscription_detail' c.sub.pk %}">{{ c.sub.number }}</a></td>
+          <td>{{ c.sub.plan.name }}</td>
+          <td><span class="badge-ui {{ c.sub.status }}">{{ c.sub.get_status_display }}</span></td>
+          <td>{{ c.start|default:"—" }}</td>
+          <td>{% if c.sub.status == 'active' %}{{ c.next_billing|default:"—" }}{% else %}—{% endif %}</td>
+          <td class="text-end" style="color:var(--teal)">₹{{ c.paid|floatformat:2 }}</td>
+          <td class="text-end" style="color:{% if c.has_due %}var(--amber){% else %}var(--text-muted){% endif %}">₹{{ c.due|floatformat:2 }}</td>
+          <td><a href="{% url 'subscription_detail' c.sub.pk %}" class="btn-ghost btn-sm-ui">Open</a></td>
+        </tr>{% endfor %}
+      </tbody>
+    </table></div>
+  </div>
+  {% else %}
+  <div class="card-ui"><div class="empty-state">
+    <div class="icon">📦</div><p class="mb-2">No subscriptions match these filters.</p>
+    <button type="button" class="btn-primary-ui btn-sm-ui" onclick="switchTab('products',document.querySelector('[data-tab=products]'))">Browse available plans</button>
+  </div></div>
+  {% endif %}
+  <div class="card-ui mt-3"><div class="panel-title">Status guide</div>
+    <div class="row g-3" style="font-size:.86rem">
+      <div class="col-md-4"><b>Draft</b><div class="text-muted">Offer still being prepared.</div></div>
+      <div class="col-md-4"><b>Quotation</b><div class="text-muted">Formal offer — open and accept to activate.</div></div>
+      <div class="col-md-4"><b>Active</b><div class="text-muted">Live plan; invoices generate on schedule.</div></div>
+      <div class="col-md-4"><b>Paused</b><div class="text-muted">Temporarily stopped; no new bills.</div></div>
+      <div class="col-md-4"><b>Closed</b><div class="text-muted">Ended. Unpaid invoices may still be due.</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- PRODUCTS / BROWSE -->
+<div id="tab-products" class="tab-pane">
+  <div class="intro-banner">
+    <div class="panel-title" style="margin-bottom:.4rem">Products &amp; subscription options</div>
+    <p class="mb-0" style="font-size:.88rem">
+      Each Brightloop product can be purchased under one or more subscription plans.
+      <span class="badge-ui owned">Yours</span> means that plan is already on your account.
+      <span class="badge-ui upgrade">Upgrade</span> marks a higher-priced plan than your current active plans.
+      Request a quote and the team will prepare a formal offer.
+    </p>
+  </div>
+
+  {% if product_catalog %}
+  {% for item in product_catalog %}
+  <div class="card-ui product-section">
+    <div class="product-head">
+      <div>
+        <h3>{{ item.product.name }}</h3>
+        <div class="variant-list">
+          List price ₹{{ item.product.sales_price }} · {{ item.product.type }}
+          {% if item.product.notes %} · {{ item.product.notes|truncatechars:80 }}{% endif %}
+        </div>
+        {% if item.variants %}
+        <div class="variant-list mt-1">
+          Variants:
+          {% for v in item.variants %}
+            {{ v.attribute }}: {{ v.value }} (+₹{{ v.extra_price }}){% if not forloop.last %}; {% endif %}
+          {% endfor %}
+        </div>
+        {% endif %}
+      </div>
+      <span class="type-pill">{{ item.product.type }}</span>
+    </div>
+
+    {% if item.offers %}
+    <div class="offer-grid">
+      {% for o in item.offers %}
+      <div class="plan-catalog-card {% if o.is_upgrade %}featured{% endif %}">
+        <div class="d-flex justify-content-between align-items-start">
+          <div class="fw-semibold" style="font-size:1.02rem">{{ o.plan.name }}</div>
+          <div>
+            {% if o.owned %}<span class="badge-ui owned">Yours</span>{% endif %}
+            {% if o.is_upgrade %}<span class="badge-ui upgrade">Upgrade</span>{% endif %}
+          </div>
+        </div>
+        <div class="price-big">₹{{ o.plan.price|floatformat:0 }}</div>
+        <div class="period">per {{ o.plan.get_billing_period_display|lower }} · qty {{ o.quantity }}{% if o.variant %} · {{ o.variant.value }}{% endif %}</div>
+        <ul>
+          <li>{{ o.plan.get_billing_period_display }} billing</li>
+          {% if o.plan.renewable %}<li>Renewable</li>{% endif %}
+          {% if o.plan.pausable %}<li>Pausable</li>{% endif %}
+          <li>Via “{{ o.template.name }}”</li>
+        </ul>
+        {% if o.owned %}
+        <button type="button" class="btn-ghost btn-sm-ui w-100" disabled style="opacity:.7">Already on your account</button>
+        {% else %}
+        <button type="button" class="btn-primary-ui btn-sm-ui w-100" onclick="requestPlan('{{ item.product.name|escapejs }} on {{ o.plan.name|escapejs }}')">
+          {% if o.is_upgrade %}Request upgrade{% else %}Request this plan{% endif %}
+        </button>
+        {% endif %}
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <p class="text-muted mb-2" style="font-size:.9rem">No packaged plan is linked to this product yet. You can still enquire.</p>
+    <button type="button" class="btn-ghost btn-sm-ui" onclick="requestPlan('{{ item.product.name|escapejs }} (product)')">Enquire about this product</button>
+    {% endif %}
+  </div>
+  {% endfor %}
+  {% else %}
+  <div class="card-ui"><div class="empty-state">No products in the catalog.</div></div>
+  {% endif %}
+
+  <div class="card-ui mt-2">
+    <div class="panel-title">All available plans</div>
+    {% if catalog_plans %}
+    <div class="plan-catalog-grid">
+      {% for item in catalog_plans %}
+      <div class="plan-catalog-card {% if item.is_upgrade %}featured{% endif %}">
+        <div class="d-flex justify-content-between align-items-start">
+          <div class="fw-semibold">{{ item.plan.name }}</div>
+          <div>{% if item.owned %}<span class="badge-ui owned">Yours</span>{% endif %}{% if item.is_upgrade %}<span class="badge-ui upgrade">Upgrade</span>{% endif %}</div>
+        </div>
+        <div class="price-big">₹{{ item.plan.price|floatformat:0 }}</div>
+        <div class="period">per {{ item.plan.get_billing_period_display|lower }}</div>
+        {% if item.owned %}
+        <button type="button" class="btn-ghost btn-sm-ui w-100 mt-3" disabled style="opacity:.7">Already on your account</button>
+        {% else %}
+        <button type="button" class="btn-primary-ui btn-sm-ui w-100 mt-3" onclick="requestPlan('{{ item.plan.name|escapejs }}')">Request this plan</button>
+        {% endif %}
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div class="empty-state">No plans currently open.</div>
+    {% endif %}
+  </div>
+
+  <div id="requestToast" class="card-ui mt-3" style="display:none;border-color:var(--teal);background:var(--teal-soft)">
+    <strong style="color:var(--teal)">Request noted</strong>
+    <p class="mb-0 mt-1" style="font-size:.88rem;color:var(--text)" id="requestToastText"></p>
+  </div>
+</div>
+
+<div id="tab-support" class="tab-pane">
+  <div class="row g-3">
+    <div class="col-lg-7"><div class="card-ui">
+      <div class="panel-title">Contact support</div>
+      <p class="text-muted mb-3" style="font-size:.88rem">Billing questions, plan changes, or technical help.</p>
+      <form class="profile-form" id="supportForm" onsubmit="return submitSupport(event)">
+        <label>Subject</label><input type="text" id="supportSubject" required placeholder="e.g. Question about invoice">
+        <label>Category</label>
+        <select id="supportCategory"><option>Billing &amp; payments</option><option>Plan change / upgrade</option><option>Technical issue</option><option>Other</option></select>
+        <label>Message</label><textarea id="supportMessage" rows="5" required placeholder="Describe your issue…" style="resize:vertical"></textarea>
+        <button type="submit" class="btn-primary-ui">Send message</button>
+      </form>
+      <div id="supportSent" style="display:none;margin-top:1rem;padding:.9rem 1rem;background:var(--green-soft);color:var(--green);border-radius:10px;font-weight:500">✓ Message recorded (demo). In production this emails support.</div>
+    </div></div>
+    <div class="col-lg-5">
+      <div class="card-ui mb-3"><div class="panel-title">Quick actions</div>
+        <div class="d-flex flex-column gap-2">
+          <button type="button" class="btn-ghost text-start" onclick="showDueList()">View outstanding invoices</button>
+          <button type="button" class="btn-ghost text-start" onclick="switchTab('products',document.querySelector('[data-tab=products]'))">Browse plans &amp; upgrades</button>
+          <a href="{% url 'password_reset' %}" class="btn-ghost text-start">Reset password</a>
+        </div>
+      </div>
+      <div class="card-ui"><div class="panel-title">Contact</div>
+        <p class="mb-1"><b>Email</b> support@brightloop.com</p>
+        <p class="mb-0 text-muted" style="font-size:.84rem">Typical reply within one business day.</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SETTINGS -->
+<div id="tab-settings" class="tab-pane">
+  <div class="row g-3">
+    <div class="col-lg-6"><div class="card-ui">
+      <div class="panel-title">Appearance</div>
+      <div class="setting-row">
+        <div><div class="title">Theme</div><div class="desc">Light or dark. Saved on this device. Use the sun/moon icon top-right anytime.</div></div>
+        <button type="button" class="theme-icon-btn" onclick="toggleTheme()" title="Toggle theme">
+          <svg class="icon-moon" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>
+          <svg class="icon-sun" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+        </button>
+      </div>
+      <div class="setting-row"><div><div class="title">Currency</div><div class="desc">Amounts shown in Indian Rupees.</div></div><span class="badge-ui active">INR (₹)</span></div>
+      <div class="setting-row"><div><div class="title">Compact tables</div><div class="desc">Denser invoice lists on this device.</div></div>
+        <div class="form-check form-switch m-0"><input class="form-check-input" type="checkbox" id="setCompact" onchange="saveSetting('bl-compact',this.checked)"></div>
+      </div>
+    </div></div>
+    <div class="col-lg-6"><div class="card-ui">
+      <div class="panel-title">Email notifications</div>
+      <div class="setting-row"><div><div class="title">Invoice reminders</div><div class="desc">Before and when invoices are due.</div></div>
+        <div class="form-check form-switch m-0"><input class="form-check-input" type="checkbox" id="notifInvoice" checked onchange="saveSetting('bl-notif-invoice',this.checked)"></div></div>
+      <div class="setting-row"><div><div class="title">Renewal notices</div><div class="desc">When a plan is about to renew.</div></div>
+        <div class="form-check form-switch m-0"><input class="form-check-input" type="checkbox" id="notifRenewal" checked onchange="saveSetting('bl-notif-renewal',this.checked)"></div></div>
+      <div class="setting-row"><div><div class="title">Product updates</div><div class="desc">News about new plans and features.</div></div>
+        <div class="form-check form-switch m-0"><input class="form-check-input" type="checkbox" id="notifPromo" onchange="saveSetting('bl-notif-promo',this.checked)"></div></div>
+      <p class="text-muted mt-2 mb-0" style="font-size:.78rem">Stored in this browser only (demo).</p>
+    </div></div>
+    <div class="col-12"><div class="card-ui">
+      <div class="panel-title">Security</div>
+      <div class="setting-row"><div><div class="title">Password</div><div class="desc">Change password for {{ user.email }}.</div></div>
+        <a href="{% url 'password_reset' %}" class="btn-ghost btn-sm-ui">Send reset link</a></div>
+      <div class="setting-row"><div><div class="title">Sign out</div><div class="desc">End this session.</div></div>
+        <form method="post" action="{% url 'logout' %}">{% csrf_token %}<button type="submit" class="btn-ghost btn-sm-ui" style="color:var(--red);border-color:var(--red)">Log out</button></form></div>
+    </div></div>
+  </div>
+</div>
+
+<!-- PROFILE -->
+<div id="tab-profile" class="tab-pane">
+  <div class="row g-3">
+    <div class="col-lg-4"><div class="card-ui text-center">
+      <div style="width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,#7c3aed,#06b6d4);color:#fff;display:grid;place-items:center;font-size:1.6rem;font-weight:700;margin:0 auto 1rem">{{ user.first_name|default:user.email|slice:":1"|upper }}</div>
+      <div class="fw-bold" style="font-size:1.1rem">{{ user.get_full_name|default:"Customer" }}</div>
+      <div class="text-muted" style="font-size:.85rem">{{ user.email }}</div>
+      <div class="mt-2"><span class="badge-ui active">{{ user.get_role_display }}</span></div>
+      <div class="row g-2 mt-3 text-start" style="font-size:.85rem">
+        <div class="col-6"><div class="text-muted">Active plans</div><div class="fw-bold">{{ active_count }}</div></div>
+        <div class="col-6"><div class="text-muted">Total paid</div><div class="fw-bold" style="color:var(--teal)">₹{{ paid_till_date|floatformat:0 }}</div></div>
+        <div class="col-6"><div class="text-muted">Outstanding</div><div class="fw-bold" style="color:var(--amber)">₹{{ amount_due|floatformat:0 }}</div></div>
+        <div class="col-6"><div class="text-muted">Subscriptions</div><div class="fw-bold">{{ total_subs }}</div></div>
+      </div>
+    </div></div>
+    <div class="col-lg-8">
+      <div class="card-ui mb-3"><div class="panel-title">Account details</div>
+        <form class="profile-form">
+          <div class="row"><div class="col-md-6"><label>First name</label><input type="text" value="{{ user.first_name }}" readonly></div>
+          <div class="col-md-6"><label>Last name</label><input type="text" value="{{ user.last_name }}" readonly></div></div>
+          <label>Email address</label><input type="email" value="{{ user.email }}" readonly>
+          <label>Username</label><input type="text" value="{{ user.username }}" readonly>
+          <label>Member since</label><input type="text" value="{{ user.date_joined|date:'d M Y' }}" readonly>
+          <p class="text-muted mb-0" style="font-size:.82rem">Name and email are managed by Brightloop staff. Use Support to request a correction.</p>
+        </form>
+      </div>
+      <div class="card-ui"><div class="panel-title">Active plan summary</div>
+        {% if most_expensive or cheapest %}
+        <div class="row g-2">
+          {% if most_expensive %}<div class="col-md-6"><div class="p-3 rounded-3" style="background:var(--bg);border:1px solid var(--border)">
+            <div class="text-muted" style="font-size:.75rem">Top plan</div>
+            <div class="fw-semibold">{{ most_expensive.plan.name }}</div>
+            <div style="color:var(--accent)">₹{{ most_expensive.plan.price }}/{{ most_expensive.plan.get_billing_period_display|lower }}</div>
+            <a href="{% url 'subscription_detail' most_expensive.pk %}" class="link" style="font-size:.8rem">Open subscription →</a>
+          </div></div>{% endif %}
+          {% if cheapest and cheapest.id != most_expensive.id %}<div class="col-md-6"><div class="p-3 rounded-3" style="background:var(--bg);border:1px solid var(--border)">
+            <div class="text-muted" style="font-size:.75rem">Entry plan</div>
+            <div class="fw-semibold">{{ cheapest.plan.name }}</div>
+            <div style="color:var(--teal)">₹{{ cheapest.plan.price }}/{{ cheapest.plan.get_billing_period_display|lower }}</div>
+            <a href="{% url 'subscription_detail' cheapest.pk %}" class="link" style="font-size:.8rem">Open subscription →</a>
+          </div></div>{% endif %}
+        </div>
+        {% else %}<div class="text-muted">No active subscriptions.</div>{% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+
+</div><!-- tabsContainer -->
+</div><!-- main -->
+</div><!-- app -->
+
+<script>
+(function(){document.documentElement.setAttribute('data-theme', localStorage.getItem('bl-theme')||'light');})();
+function toggleTheme(){var n=document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark';document.documentElement.setAttribute('data-theme',n);localStorage.setItem('bl-theme',n);rebuildCharts();}
+function saveSetting(k,v){localStorage.setItem(k,v?'1':'0');}
+(function(){var m={'bl-notif-invoice':'notifInvoice','bl-notif-renewal':'notifRenewal','bl-notif-promo':'notifPromo','bl-compact':'setCompact'};Object.keys(m).forEach(function(k){var el=document.getElementById(m[k]);if(!el)return;var v=localStorage.getItem(k);if(v!==null)el.checked=v==='1';});})();
+var titles={dashboard:'Dashboard',statistics:'Statistics',subscriptions:'My Subscriptions',products:'Browse & Upgrade',support:'Support',settings:'Settings',profile:'Profile'};
+function switchTab(name,el){hideDueList();document.querySelectorAll('.tab-pane').forEach(function(p){p.classList.remove('active');});document.querySelectorAll('.nav-item').forEach(function(n){n.classList.remove('active');});var pane=document.getElementById('tab-'+name);if(pane)pane.classList.add('active');if(el)el.classList.add('active');else{var nav=document.querySelector('[data-tab="'+name+'"]');if(nav)nav.classList.add('active');}var title=document.getElementById('pageTitle');if(title)title.textContent=titles[name]||name;closeSidebar();setTimeout(function(){if(window._charts)Object.values(window._charts).forEach(function(c){c&&c.resize();});},40);var url=new URL(window.location);url.searchParams.set('tab',name);url.searchParams.delete('show');history.replaceState(null,'',url);}
+function showDueList(){document.getElementById('tabsContainer').style.display='none';document.getElementById('duePaidPanel').style.display='block';document.getElementById('dueListBlock').style.display='block';document.getElementById('paidListBlock').style.display='none';document.getElementById('duePaidTitle').textContent='Outstanding invoices';document.getElementById('pageTitle').textContent='Outstanding';}
+function showPaidList(){document.getElementById('tabsContainer').style.display='none';document.getElementById('duePaidPanel').style.display='block';document.getElementById('dueListBlock').style.display='none';document.getElementById('paidListBlock').style.display='block';document.getElementById('duePaidTitle').textContent='Payment history';document.getElementById('pageTitle').textContent='Payments';}
+function hideDueList(){document.getElementById('duePaidPanel').style.display='none';document.getElementById('tabsContainer').style.display='block';}
+function openSidebar(){document.getElementById('sidebar').classList.add('open');document.getElementById('sidebarOverlay').classList.add('show');}
+function closeSidebar(){document.getElementById('sidebar').classList.remove('open');document.getElementById('sidebarOverlay').classList.remove('show');}
+(function(){var t=new URLSearchParams(window.location.search).get('tab');if(t&&titles[t])switchTab(t);})();
+function submitSupport(e){e.preventDefault();document.getElementById('supportSent').style.display='block';document.getElementById('supportForm').reset();return false;}
+function requestPlan(name){var el=document.getElementById('requestToast');document.getElementById('requestToastText').textContent='Interest in “'+name+'” noted. Open Support to send details, or wait for a sales quotation. (Demo — no server write.)';el.style.display='block';el.scrollIntoView({behavior:'smooth',block:'nearest'});}
+var chartJson={{ chart_json|safe }},pieJson={{ pie_json|safe }},lineLabels={{ line_labels|safe }},lineValues={{ line_values|safe }},methodLabels={{ method_labels|safe }},methodValues={{ method_values|safe }},statusPie={{ status_pie_json|safe }};
+function inr(v){return '₹'+Number(v).toLocaleString('en-IN',{maximumFractionDigits:0});}
+function chartColors(){var dark=document.documentElement.getAttribute('data-theme')==='dark';return{text:dark?'#94a3b8':'#64748b',grid:dark?'rgba(148,163,184,0.12)':'rgba(148,163,184,0.25)',purple:'#8b5cf6',teal:'#14b8a6',amber:'#f59e0b',palette:['#8b5cf6','#14b8a6','#f59e0b','#3b82f6','#ec4899','#22c55e','#f97316','#64748b']};}
+function destroyCharts(){if(!window._charts)return;Object.values(window._charts).forEach(function(c){try{c.destroy();}catch(e){}});window._charts={};}
+function makeCharts(){
+  destroyCharts();window._charts={};var c=chartColors();
+  var moneyTooltip={callbacks:{label:function(ctx){return (ctx.dataset.label?ctx.dataset.label+': ':'')+inr(ctx.raw);}}};
+  function showEmpty(cid,eid,has){var canvas=document.getElementById(cid),empty=document.getElementById(eid);if(!canvas||!empty)return has;canvas.style.display=has?'block':'none';empty.style.display=has?'none':'flex';return has;}
+  if(showEmpty('chartBarDash','emptyBarDash',chartJson&&chartJson.length)){window._charts.barDash=new Chart(document.getElementById('chartBarDash'),{type:'bar',data:{labels:chartJson.map(function(x){return x.name;}),datasets:[{label:'Paid',data:chartJson.map(function(x){return x.paid;}),backgroundColor:c.teal,borderRadius:6,maxBarThickness:36},{label:'Still due',data:chartJson.map(function(x){return x.due;}),backgroundColor:c.amber,borderRadius:6,maxBarThickness:36}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:c.text,boxWidth:12}},tooltip:moneyTooltip},scales:{x:{ticks:{color:c.text,maxRotation:30},grid:{display:false}},y:{ticks:{color:c.text,callback:function(v){return inr(v);}},grid:{color:c.grid},title:{display:true,text:'Amount (₹)',color:c.text,font:{size:11}}}}}});}
+  if(showEmpty('chartPieDash','emptyPieDash',pieJson&&pieJson.length)){window._charts.pieDash=new Chart(document.getElementById('chartPieDash'),{type:'doughnut',data:{labels:pieJson.map(function(x){return x.name;}),datasets:[{data:pieJson.map(function(x){return x.value;}),backgroundColor:c.palette,borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,cutout:'62%',plugins:{legend:{position:'bottom',labels:{color:c.text,boxWidth:10,font:{size:11}}},tooltip:{callbacks:{label:function(ctx){var t=ctx.dataset.data.reduce(function(a,b){return a+b;},0);var pct=t?((ctx.raw/t)*100).toFixed(1):0;return ctx.label+': '+inr(ctx.raw)+' ('+pct+'%)';}}}}}});}
+  if(showEmpty('chartLine','emptyLine',lineValues&&lineValues.length)){window._charts.line=new Chart(document.getElementById('chartLine'),{type:'line',data:{labels:lineLabels,datasets:[{label:'Payments received',data:lineValues,borderColor:c.purple,backgroundColor:'rgba(139,92,246,0.12)',fill:true,tension:0.35,pointRadius:4,pointBackgroundColor:c.purple,pointHoverRadius:6}]},options:{responsive:true,maintainAspectRatio:false,interaction:{mode:'index',intersect:false},plugins:{legend:{display:false},tooltip:moneyTooltip},scales:{x:{ticks:{color:c.text},grid:{color:c.grid}},y:{ticks:{color:c.text,callback:function(v){return inr(v);}},grid:{color:c.grid},title:{display:true,text:'₹ received',color:c.text,font:{size:11}}}}}});}
+  if(showEmpty('chartBarStats','emptyBarStats',chartJson&&chartJson.length)){window._charts.barStats=new Chart(document.getElementById('chartBarStats'),{type:'bar',data:{labels:chartJson.map(function(x){return x.name;}),datasets:[{label:'Paid',data:chartJson.map(function(x){return x.paid;}),backgroundColor:c.teal,borderRadius:6,maxBarThickness:32},{label:'Due',data:chartJson.map(function(x){return x.due;}),backgroundColor:c.amber,borderRadius:6,maxBarThickness:32}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{labels:{color:c.text,boxWidth:12}},tooltip:moneyTooltip},scales:{x:{ticks:{color:c.text,maxRotation:30},grid:{display:false}},y:{ticks:{color:c.text,callback:function(v){return inr(v);}},grid:{color:c.grid}}}}});}
+  if(showEmpty('chartPieStats','emptyPieStats',pieJson&&pieJson.length)){window._charts.pieStats=new Chart(document.getElementById('chartPieStats'),{type:'doughnut',data:{labels:pieJson.map(function(x){return x.name;}),datasets:[{data:pieJson.map(function(x){return x.value;}),backgroundColor:c.palette,borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,cutout:'58%',plugins:{legend:{position:'bottom',labels:{color:c.text,boxWidth:10,font:{size:10}}},tooltip:{callbacks:{label:function(ctx){var t=ctx.dataset.data.reduce(function(a,b){return a+b;},0);var pct=t?((ctx.raw/t)*100).toFixed(1):0;return ctx.label+': '+inr(ctx.raw)+' ('+pct+'%)';}}}}}});}
+  if(showEmpty('chartMethods','emptyMethods',methodValues&&methodValues.length)){window._charts.methods=new Chart(document.getElementById('chartMethods'),{type:'doughnut',data:{labels:methodLabels,datasets:[{data:methodValues,backgroundColor:c.palette,borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,cutout:'55%',plugins:{legend:{position:'bottom',labels:{color:c.text,boxWidth:10,font:{size:10}}},tooltip:{callbacks:{label:function(ctx){var t=ctx.dataset.data.reduce(function(a,b){return a+b;},0);var pct=t?((ctx.raw/t)*100).toFixed(1):0;return ctx.label+': '+inr(ctx.raw)+' ('+pct+'%)';}}}}}});}
+  if(showEmpty('chartStatus','emptyStatus',statusPie&&statusPie.length)){var sc={Draft:'#94a3b8',Confirmed:'#3b82f6',Paid:'#14b8a6',Cancelled:'#64748b',Overdue:'#ef4444'};window._charts.status=new Chart(document.getElementById('chartStatus'),{type:'doughnut',data:{labels:statusPie.map(function(x){return x.name;}),datasets:[{data:statusPie.map(function(x){return x.value;}),backgroundColor:statusPie.map(function(x){return sc[x.name]||c.purple;}),borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,cutout:'55%',plugins:{legend:{position:'bottom',labels:{color:c.text,boxWidth:10,font:{size:10}}},tooltip:{callbacks:{label:function(ctx){return ctx.label+': '+ctx.raw+' invoice'+(ctx.raw===1?'':'s');}}}}}});}
+}
+function rebuildCharts(){makeCharts();}
+document.addEventListener('DOMContentLoaded',makeCharts);
+</script>
+</body>
+</html>

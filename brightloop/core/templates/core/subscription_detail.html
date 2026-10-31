@@ -1,0 +1,110 @@
+{% extends 'core/base.html' %}
+{% block title %}{{ sub.number }} – Brightloop{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap gap-2 mb-3 align-items-start">
+  <div>
+    <a href="{% if user.is_team %}{% url 'subscription_list' %}{% else %}{% url 'portal' %}?tab=subscriptions{% endif %}"
+       class="btn btn-outline-secondary btn-sm noprint mb-2" style="text-decoration:none">
+      ← Back to {% if user.is_team %}subscriptions{% else %}my subscriptions{% endif %}
+    </a>
+    <h1 class="m-0">{{ sub.number }}</h1>
+  </div>
+  <div class="d-flex gap-2 noprint flex-wrap">
+    {% if user.is_team and sub.next_status %}
+    <form method="post" action="{% url 'subscription_action' sub.pk 'advance' %}">{% csrf_token %}
+      <button type="submit" class="btn btn-brand">Move to {{ sub.next_status|capfirst }}</button>
+    </form>
+    {% endif %}
+    {% if not user.is_team and sub.status == 'quotation' and sub.customer_id == user.id %}
+    <form method="post" action="{% url 'subscription_action' sub.pk 'accept' %}">{% csrf_token %}
+      <button type="submit" class="btn btn-brand">Accept quotation &amp; activate</button>
+    </form>
+    {% endif %}
+    {% if sub.plan.pausable and sub.status == 'active' %}
+    <form method="post" action="{% url 'subscription_action' sub.pk 'pause' %}">{% csrf_token %}
+      <button type="submit" class="btn btn-outline-secondary">{% if sub.paused %}Resume{% else %}Pause{% endif %}</button>
+    </form>
+    {% endif %}
+    {% if sub.plan.renewable and sub.status == 'active' or sub.plan.renewable and sub.status == 'closed' %}
+    <form method="post" action="{% url 'subscription_action' sub.pk 'renew' %}">{% csrf_token %}
+      <button type="submit" class="btn btn-outline-secondary">Renew</button>
+    </form>
+    {% endif %}
+    {% if sub.plan.closable and sub.status != 'closed' %}
+    <form method="post" action="{% url 'subscription_action' sub.pk 'close' %}"
+          onsubmit="return confirm('Close this subscription? Unpaid invoices will still be due.')">{% csrf_token %}
+      <button type="submit" class="btn btn-outline-danger">Close</button>
+    </form>
+    {% endif %}
+  </div>
+</div>
+
+<div class="steps mb-3">
+  {% for v,l in steps %}<span class="{% if v == sub.status %}on{% endif %}">{{ l }}</span>{% endfor %}
+  {% if sub.paused %}<span class="st-paused">Paused</span>{% endif %}
+</div>
+
+{% if sub.status == 'quotation' and not user.is_team %}
+<div class="alert alert-success noprint">This is a quotation. Review the details below, then click <b>Accept quotation &amp; activate</b> to commit and start the subscription.</div>
+{% endif %}
+{% if sub.status == 'closed' %}
+<div class="alert alert-secondary noprint">This subscription is closed. Any unpaid invoices below are still due and can be paid from the invoice page.</div>
+{% endif %}
+{% if sub.status == 'confirmed' %}
+<div class="alert alert-info noprint">Confirmed — customer accepted. Billing starts when status moves to Active (team) or after you accept a quotation (auto-activates).</div>
+{% endif %}
+
+<div class="panel mb-3">
+  <div class="row g-3">
+    <div class="col-md-3"><b>Customer</b><br>{{ sub.customer }}</div>
+    <div class="col-md-3"><b>Plan</b><br>{{ sub.plan }}</div>
+    <div class="col-md-2"><b>Starts</b><br>{{ sub.start_date }}</div>
+    <div class="col-md-2"><b>Expires</b><br>{{ sub.expiry_date|default:'No expiry' }}</div>
+    <div class="col-md-2"><b>Terms</b><br>{{ sub.payment_terms }}</div>
+  </div>
+  {% if sub.quote_valid_until or sub.next_billing_date %}
+  <p class="mt-2 mb-0 text-muted" style="font-size:.9rem">
+    {% if sub.quote_valid_until %}Quotation valid until {{ sub.quote_valid_until }}. {% endif %}
+    {% if sub.next_billing_date %}Next billing: {{ sub.next_billing_date }}.{% endif %}
+  </p>
+  {% endif %}
+</div>
+
+<div class="panel mb-3 table-responsive">
+  <table class="table m-0">
+    <thead><tr><th>Product</th><th>Qty</th><th>Unit price</th><th>Tax</th><th class="text-end">Amount</th></tr></thead>
+    <tbody>
+    {% for l in lines %}
+      <tr>
+        <td>{{ l.product }}{% if l.variant %} <span class="text-muted">({{ l.variant.value }})</span>{% endif %}</td>
+        <td>{{ l.quantity }}</td>
+        <td>₹{{ l.unit_price }}</td>
+        <td>{{ l.tax|default:'-' }}</td>
+        <td class="text-end">₹{{ l.amount }}</td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<div class="panel">
+  <h6 class="mb-2">Invoices</h6>
+  {% for i in invoices %}
+  <div class="mb-1">
+    <a href="{% url 'invoice_detail' i.pk %}">{{ i.number }}</a>
+    · ₹{{ i.total }}
+    · <span class="badge st-{{ i.status }}">{{ i.get_status_display }}</span>
+    {% if i.balance > 0 and i.status != 'cancelled' %}
+    · <span style="color:var(--amber)">Due ₹{{ i.balance }}</span>
+    · <a href="{% url 'invoice_detail' i.pk %}" class="btn btn-brand btn-sm" style="color:#fff">Pay</a>
+    {% endif %}
+  </div>
+  {% empty %}
+  <span class="text-muted">None yet.
+    {% if sub.status == 'quotation' or sub.status == 'draft' %}
+    Invoices are created after the subscription is active and billing runs.
+    {% endif %}
+  </span>
+  {% endfor %}
+</div>
+{% endblock %}

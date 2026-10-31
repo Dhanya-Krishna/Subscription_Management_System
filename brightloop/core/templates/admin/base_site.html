@@ -1,0 +1,42 @@
+{% extends "admin/base.html" %}
+{% block title %}{{ title }} | Brightloop Admin{% endblock %}
+{% block branding %}
+<h1 id="site-name"><a href="{% url 'admin:index' %}">Brightloop Admin</a></h1>
+{% endblock %}
+{% block extrastyle %}
+{{ block.super }}
+<style>
+:root {
+  --primary: #7c3aed;
+  --secondary: #5b21b6;
+  --link-fg: #7c3aed;
+  --header-bg: #0f1419;
+  --header-color: #fff;
+  --accent: #a78bfa;
+  --body-bg: #f4f6f9;
+  --body-quiet-color: #64748b;
+  --darkened-bg: #ede9fe;
+  --selected-bg: #ede9fe;
+  --button-bg: #7c3aed;
+  --button-hover-bg: #6d28d9;
+  --default-button-bg: #5b21b6;
+  --default-button-hover-bg: #4c1d95;
+  --breadcrumbs-bg: #1e1b4b;
+  --breadcrumbs-fg: #e9d5ff;
+}
+#header { background: #0f1419; }
+#branding h1, #branding h1 a:link, #branding h1 a:visited { color: #fff; font-weight: 700; }
+div.breadcrumbs { background: #1e1b4b; color: #e9d5ff; }
+div.breadcrumbs a { color: #c4b5fd; }
+.module h2, .module caption, .inline-group h2 { background: #7c3aed; }
+a:link, a:visited { color: #7c3aed; }
+.button, input[type=submit], input[type=button], .submit-row input, a.button {
+  background: #7c3aed; border-radius: 8px;
+}
+.button:hover, input[type=submit]:hover, input[type=button]:hover {
+  background: #6d28d9;
+}
+.button.default, input[type=submit].default, .submit-row input.default { background: #5b21b6; }
+#user-tools a { color: #c4b5fd; }
+</style>
+{% endblock %}

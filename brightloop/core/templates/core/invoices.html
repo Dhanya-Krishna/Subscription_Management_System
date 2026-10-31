@@ -1,0 +1,11 @@
+{% extends 'core/base.html' %}{% block content %}
+<div class="d-flex justify-content-between mb-3"><h1 class="m-0">Invoices</h1>
+<form method="post" action="{% url 'run_billing' %}">{% csrf_token %}<button class="btn btn-brand">Run billing for today</button></form></div>
+<form class="std d-flex gap-2 mb-3" method="get"><input name="q" value="{{ q }}" placeholder="Search number or customer" style="max-width:280px">
+<select name="filter" style="max-width:200px"><option value="" {% if not f %}selected{% endif %}>All</option><option value="draft" {% if f == 'draft' %}selected{% endif %}>Draft</option><option value="confirmed" {% if f == 'confirmed' %}selected{% endif %}>Confirmed</option><option value="paid" {% if f == 'paid' %}selected{% endif %}>Paid</option><option value="outstanding" {% if f == 'outstanding' %}selected{% endif %}>Outstanding</option><option value="overdue" {% if f == 'overdue' %}selected{% endif %}>Overdue</option><option value="cancelled" {% if f == 'cancelled' %}selected{% endif %}>Cancelled</option></select>
+<button class="btn btn-outline-secondary">Filter</button></form>
+<div class="panel p-0 table-responsive"><table class="table m-0"><thead><tr><th>Invoice</th><th>Customer</th><th>Due</th><th class="text-end">Total</th><th>Status</th></tr></thead>
+{% for i in page %}<tr><td><a href="{% url 'invoice_detail' i.pk %}">{{ i.number }}</a></td><td>{{ i.customer }}</td><td>{{ i.due_date }}</td><td class="text-end">₹{{ i.total }}</td>
+<td><span class="badge st-{{ i.status }}">{{ i.get_status_display }}</span>{% if i.is_overdue %} <span class="badge st-overdue">Overdue</span>{% endif %}</td></tr>
+{% empty %}<tr><td colspan="5" class="text-muted p-4">No invoices yet. Activate a subscription, then run billing.</td></tr>{% endfor %}</table></div>
+{% include 'core/_pager.html' %}{% endblock %}

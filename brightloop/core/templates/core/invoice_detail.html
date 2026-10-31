@@ -1,0 +1,35 @@
+{% extends 'core/base.html' %}{% block content %}
+<a href="{% if user.is_team %}{% url 'invoice_list' %}{% else %}{% url 'portal' %}{% endif %}"
+   class="btn btn-outline-secondary btn-sm noprint mb-3" style="text-decoration:none">← Back</a>
+
+<div class="d-flex justify-content-between flex-wrap gap-2 mb-3"><h1 class="m-0">Invoice {{ inv.number }} <span class="badge st-{{ inv.status }}">{{ inv.get_status_display }}</span>{% if inv.is_overdue %} <span class="badge st-overdue">Overdue</span>{% endif %}</h1>
+<div class="d-flex gap-2 noprint">
+{% if user.is_team %}
+{% if inv.status == 'draft' %}<form method="post" action="{% url 'invoice_action' inv.pk 'confirm' %}">{% csrf_token %}<button class="btn btn-brand" style="color:#fff">Confirm</button></form>{% endif %}
+{% if inv.status != 'cancelled' %}<form method="post" action="{% url 'invoice_action' inv.pk 'send' %}">{% csrf_token %}<button class="btn btn-outline-secondary">{% if inv.sent %}Send again{% else %}Send by email{% endif %}</button></form>{% endif %}
+{% if inv.status == 'draft' or inv.status == 'confirmed' %}<form method="post" action="{% url 'invoice_action' inv.pk 'cancel' %}" onsubmit="return confirm('Cancel this invoice?')">{% csrf_token %}<button class="btn btn-outline-danger">Cancel</button></form>{% endif %}
+{% endif %}
+<button class="btn btn-outline-secondary" onclick="window.print()">Print</button></div></div>
+<div class="panel mb-3"><div class="row"><div class="col-md-4"><b>Billed to</b><br>{{ inv.customer }}<br>{{ inv.customer.email }}</div>
+<div class="col-md-3"><b>Subscription</b><br>{% if user.is_team %}<a href="{% url 'subscription_detail' inv.subscription.pk %}">{{ inv.subscription }}</a>{% else %}<a href="{% url 'subscription_detail' inv.subscription.pk %}">{{ inv.subscription }}</a>{% endif %}</div>
+<div class="col-md-2"><b>Issued</b><br>{{ inv.issue_date }}</div><div class="col-md-3"><b>Due</b><br>{{ inv.due_date }}</div></div></div>
+<div class="panel mb-3 table-responsive"><table class="table m-0"><thead><tr><th>Item</th><th>Qty</th><th>Unit price</th><th>Tax</th><th class="text-end">Amount</th></tr></thead>
+{% for l in lines %}<tr><td>{{ l.description }}</td><td>{{ l.quantity }}</td><td>₹{{ l.unit_price }}</td><td>{{ l.tax_name|default:'-' }} {% if l.tax_amount %}(₹{{ l.tax_amount }}){% endif %}</td><td class="text-end">₹{{ l.amount }}</td></tr>{% endfor %}
+<tr><td colspan="4" class="text-end">Subtotal</td><td class="text-end">₹{{ inv.subtotal }}</td></tr>
+{% if inv.discount_total %}<tr><td colspan="4" class="text-end">Discount ({{ inv.discounts_applied }})</td><td class="text-end">-₹{{ inv.discount_total }}</td></tr>{% endif %}
+<tr><td colspan="4" class="text-end">Tax</td><td class="text-end">₹{{ inv.tax_total }}</td></tr>
+<tr><td colspan="4" class="text-end"><b>Total</b></td><td class="text-end"><b>₹{{ inv.total }}</b></td></tr>
+<tr><td colspan="4" class="text-end">Paid</td><td class="text-end">₹{{ inv.paid_amount }}</td></tr>
+<tr><td colspan="4" class="text-end"><b>Balance</b></td><td class="text-end"><b>₹{{ inv.balance }}</b></td></tr></table></div>
+<div class="panel mb-3"><h6>Payments</h6>{% for p in payments %}<div>{{ p.date }} · {{ p.get_method_display }} · ₹{{ p.amount }} {% if p.note %}· {{ p.note }}{% endif %}</div>{% empty %}<span class="text-muted">No payments recorded.</span>{% endfor %}</div>
+{% if inv.balance > 0 and inv.status != 'cancelled' and inv.status != 'paid' %}
+<form method="post" action="{% url 'invoice_action' inv.pk 'pay' %}" class="panel std noprint">{% csrf_token %}
+  <h6>{% if user.is_team %}Record a payment{% else %}Pay this invoice{% endif %}</h6>
+  {% if not user.is_team %}<p class="text-muted" style="font-size:.9rem">Demo payment form — choose a method and amount. A real card gateway can be plugged in later.</p>{% endif %}
+  <div class="row g-2 align-items-end">
+  {% for f in form %}<div class="col-md-3"><label>{{ f.label }}</label>{{ f }}</div>{% endfor %}
+  <div class="col-12"><button class="btn btn-brand" style="color:#fff">{% if user.is_team %}Record payment{% else %}Pay now{% endif %}</button></div>
+  </div>
+</form>
+{% endif %}
+{% endblock %}

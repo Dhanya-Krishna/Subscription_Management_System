@@ -1,0 +1,12 @@
+{% extends 'core/base.html' %}{% block content %}
+<h1>New subscription</h1>
+<form method="get" class="std d-flex gap-2 align-items-end mb-3"><div><label>Start from a quotation template</label>
+<select name="template"><option value="">Blank</option>{% for t in templates %}<option value="{{ t.id }}">{{ t.name }}</option>{% endfor %}</select></div><button class="btn btn-outline-secondary">Load</button></form>
+<form method="post" class="std">{% csrf_token %}
+<div class="panel mb-3">{{ form.non_field_errors }}<div class="row g-3">
+{% for f in form %}<div class="col-md-4"><label>{{ f.label }}</label>{{ f }}{{ f.errors }}</div>{% endfor %}</div></div>
+<div class="panel mb-3"><h6>Lines</h6><p class="text-muted">Leave unit price at 0 to use the product price plus any variant extra.</p>
+{{ formset.management_form }}{{ formset.non_form_errors }}
+<div class="table-responsive"><table class="table"><thead><tr><th>Product</th><th>Variant</th><th>Qty</th><th>Unit price</th><th>Tax</th></tr></thead>
+{% for f in formset %}<tr>{% for h in f.hidden_fields %}{{ h }}{% endfor %}{% for x in f.visible_fields %}<td>{{ x }}{{ x.errors }}</td>{% endfor %}</tr>{% endfor %}</table></div></div>
+<button class="btn btn-brand">Save as draft</button></form>{% endblock %}
